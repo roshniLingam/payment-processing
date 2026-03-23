@@ -2,7 +2,6 @@ package com.payment.processing.controller;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +24,8 @@ import lombok.NonNull;
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
-    @Autowired
-    private PaymentService paymentService;
+
+    private final PaymentService paymentService;
 
     @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(
