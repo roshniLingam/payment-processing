@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.Id;
-import org.springframework.web.bind.annotation.RequestHeader;
-
 import com.payment.processing.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -46,7 +44,7 @@ public class Payment {
 
     @Column(nullable = false)
     private String userId;
-    
+
     @Column(nullable = false)
     @Positive
     private BigDecimal amount;

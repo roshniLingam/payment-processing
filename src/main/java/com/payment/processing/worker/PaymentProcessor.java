@@ -1,10 +1,8 @@
 package com.payment.processing.worker;
 
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.event.KafkaEvent;
 import org.springframework.stereotype.Service;
 
-import com.payment.processing.enums.KafkaEvents;
 import com.payment.processing.repository.PaymentRepository;
 
 import lombok.AllArgsConstructor;

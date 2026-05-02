@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.boot.json.JsonParseException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,16 +35,21 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse createPayment(CreatePaymentRequest request, String idempotencyKey) {
+        try {
+            return processNewPayment(request, idempotencyKey);
+        } catch (DataIntegrityViolationException ex) {
+            // Another request already created the payment with this idempotency key
+            Payment existing = paymentRepository.findByIdempotencyKey(idempotencyKey)
+                .orElseThrow(() -> new RuntimeException("Payment exists but could not be retrieved"));
 
-        return paymentRepository.findByIdempotencyKey(idempotencyKey)
-                .map(this::mapToResponse)
-                .orElseGet(() -> processNewPayment(request, idempotencyKey));
+            return mapToResponse(existing);
+        }
     }
 
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentStatus(UUID paymentId){
+    public PaymentResponse getPaymentStatus(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-        .orElseThrow(()-> new RuntimeException("Payment Id not found"));
+            .orElseThrow(() -> new RuntimeException("Payment Id not found"));
         return mapToResponse(payment);
     }
  

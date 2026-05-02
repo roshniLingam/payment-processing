@@ -1,6 +1,5 @@
 package com.payment.processing.controller;
 
-import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
