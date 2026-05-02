@@ -45,7 +45,7 @@ public class OutboxEvent {
     private OutboxStatus status;
     @Column(nullable = false)
     private Instant createdAt;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Instant publishedAt;
 
 }

@@ -1,7 +1,9 @@
 package com.payment.processing.controller;
 
+import java.net.URI;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +36,7 @@ public class PaymentController {
         PaymentResponse response =
                 paymentService.createPayment(request, idempotencyKey);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     @GetMapping("/{paymentId}/status")

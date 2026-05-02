@@ -1,5 +1,7 @@
 package com.payment.processing.payload;
 
+import java.math.BigDecimal;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,7 +9,8 @@ import lombok.Data;
 @Builder
 public class CreatePaymentRequest {
     private String userId;
-    private Long amount;
+    private BigDecimal amount;
     private String currency;
     private String paymentMethod;
+    private String providerReference;
 }

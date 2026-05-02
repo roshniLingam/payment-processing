@@ -1,5 +1,6 @@
 package com.payment.processing.payload;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -10,5 +11,5 @@ import lombok.Data;
 public class PaymentCreatedEvent {
     private UUID paymentId;
     private String userId;
-    private Long amount;
+    private BigDecimal amount;
 }

@@ -64,6 +64,7 @@ public class PaymentService {
         payment.setAmount(request.getAmount());
         payment.setCurrency(request.getCurrency());
         payment.setStatus(PaymentStatus.PENDING);
+        payment.setProviderReference(request.getProviderReference());
         payment.setCreatedAt(Instant.now());
         return payment;
     }
