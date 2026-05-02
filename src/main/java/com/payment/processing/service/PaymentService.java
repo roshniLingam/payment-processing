@@ -1,7 +1,9 @@
 package com.payment.processing.service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.boot.json.JsonParseException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,10 +41,11 @@ public class PaymentService {
             return processNewPayment(request, idempotencyKey);
         } catch (DataIntegrityViolationException ex) {
             // Another request already created the payment with this idempotency key
-            Payment existing = paymentRepository.findByIdempotencyKey(idempotencyKey)
-                .orElseThrow(() -> new RuntimeException("Payment exists but could not be retrieved"));
+            // Payment existing = paymentRepository.findByIdempotencyKey(idempotencyKey)
+            //     .orElseThrow(() -> new RuntimeException("Payment exists but could not be retrieved"));
 
-            return mapToResponse(existing);
+            // return mapToResponse(existing);
+            return fetchWithRetry(idempotencyKey);
         }
     }
 
@@ -61,6 +64,32 @@ public class PaymentService {
         outboxEventRepository.save(outboxEvent);
 
         return mapToResponse(payment);
+    }
+
+    private PaymentResponse fetchWithRetry(String idempotencyKey) {
+        int maxAttempts = 5;
+        long baseDelayMs = 10;
+
+        for(int attempt = 1; attempt <=maxAttempts; attempt++) {
+            Optional<Payment> existing = paymentRepository.findByIdempotencyKey(idempotencyKey);
+            if(existing.isPresent()){
+                return mapToResponse(existing.get());
+            }
+
+            // Exponential backoff with jitter
+            long backoff = (long) (baseDelayMs * Math.pow(2, attempt - 1));
+            long jitter = ThreadLocalRandom.current().nextLong(0, 10);
+            long sleepTime = backoff + jitter;
+
+            try {
+                Thread.sleep(sleepTime);
+            } catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Retry interrupted", e);
+            }
+        }
+
+        throw new RuntimeException("Payment exists but not visible after retries");
     }
 
     private Payment buildPayment(CreatePaymentRequest request, String idempotencyKey) {
