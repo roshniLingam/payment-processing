@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.Id;
 
+import com.payment.processing.enums.EventType;
 import com.payment.processing.enums.OutboxStatus;
 
 import jakarta.persistence.Column;
@@ -35,7 +36,7 @@ public class OutboxEvent {
     @Column(nullable = false)
     private String aggregateId;
     @Column(nullable = false)
-    private String eventType;
+    private EventType eventType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;
