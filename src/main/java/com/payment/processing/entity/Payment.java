@@ -69,6 +69,12 @@ public class Payment {
     @Version
     private Long version;
 
+    @Column(nullable = false)
+    private int retryCount = 0;
+
+    @Column(nullable = false)
+    private int maxRetries = 5;
+
     @PrePersist
     public void onCreate(){
         createdAt = Instant.now();
