@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.springframework.boot.json.JsonParseException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,12 +39,11 @@ public class PaymentService {
         try {
             return processNewPayment(request, idempotencyKey);
         } catch (DataIntegrityViolationException ex) {
-            // Another request already created the payment with this idempotency key
-            // Payment existing = paymentRepository.findByIdempotencyKey(idempotencyKey)
-            //     .orElseThrow(() -> new RuntimeException("Payment exists but could not be retrieved"));
+            // idempotency fallback
+            Payment existing = paymentRepository.findByIdempotencyKey(idempotencyKey)
+                .orElseThrow(() -> new RuntimeException("Payment exists but not found"));
 
-            // return mapToResponse(existing);
-            return fetchWithRetry(idempotencyKey);
+            return mapToResponse(existing);
         }
     }
 
@@ -100,32 +98,29 @@ public class PaymentService {
         payment.setCurrency(request.getCurrency());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setProviderReference(request.getProviderReference());
-        payment.setCreatedAt(Instant.now());
         return payment;
     }
 
     private OutboxEvent buildOutboxEvent(Payment payment) {
-        PaymentCreatedEvent event = PaymentCreatedEvent.builder()
-            .paymentId(payment.getId())
-            .userId(payment.getUserId())
-            .amount(payment.getAmount())
-            .build();
-
         try {
-            String payload = objectMapper.writeValueAsString(event);
+            PaymentCreatedEvent event = PaymentCreatedEvent.builder()
+                .paymentId(payment.getId())
+                .userId(payment.getUserId())
+                .amount(payment.getAmount())
+                .build();
 
             OutboxEvent outbox = new OutboxEvent();
             outbox.setAggregateType(AGGREGATE_TYPE);
             outbox.setAggregateId(payment.getId().toString());
-            outbox.setEventType(EventType.PAYMENT_CREATED.getValue());
-            outbox.setPayload(payload);
+            outbox.setEventType(EventType.PAYMENT_CREATED);
+            outbox.setPayload(objectMapper.writeValueAsString(event));
             outbox.setStatus(OutboxStatus.NEW);
             outbox.setCreatedAt(Instant.now());
 
             return outbox;
 
-        } catch (JsonParseException e) {
-            throw new RuntimeException("Failed to serialize PaymentCreatedEvent", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
