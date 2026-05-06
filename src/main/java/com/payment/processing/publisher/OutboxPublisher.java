@@ -32,7 +32,7 @@ public class OutboxPublisher {
                     "payment-events",
                     event.getAggregateId(),
                     event.getPayload()
-                );
+                ).get();
 
                 event.setStatus(OutboxStatus.PUBLISHED);
                 event.setPublishedAt(Instant.now());

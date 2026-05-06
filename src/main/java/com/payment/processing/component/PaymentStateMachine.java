@@ -24,14 +24,14 @@ public class PaymentStateMachine {
             PaymentStatus.FAILED, Map.of()
         );
 
-        public void stateTransition(Payment payment, PaymentEvent paymentEvent) {
-            PaymentStatus currentPaymentStatus = payment.getStatus();
-            Map<PaymentEvent, PaymentStatus> allowedTransition = 
-                        transitionsMap.getOrDefault(currentPaymentStatus, Map.of());
-            if(!allowedTransition.containsKey(paymentEvent)){
-                throw new IllegalStateException("Invalid transition: " + currentPaymentStatus + " -> " + paymentEvent);
-            }
-
-            payment.setStatus(allowedTransition.get(paymentEvent));
+    public void stateTransition(Payment payment, PaymentEvent paymentEvent) {
+        PaymentStatus currentPaymentStatus = payment.getStatus();
+        Map<PaymentEvent, PaymentStatus> allowedTransition = 
+                transitionsMap.getOrDefault(currentPaymentStatus, Map.of());
+        if(!allowedTransition.containsKey(paymentEvent)){
+            throw new IllegalStateException("Invalid transition: " + currentPaymentStatus + " -> " + paymentEvent);
         }
+
+        payment.setStatus(allowedTransition.get(paymentEvent));
+    }
 }

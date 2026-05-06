@@ -1,10 +1,7 @@
 package com.payment.processing.service;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,32 +59,6 @@ public class PaymentService {
         outboxEventRepository.save(outboxEvent);
 
         return mapToResponse(payment);
-    }
-
-    private PaymentResponse fetchWithRetry(String idempotencyKey) {
-        int maxAttempts = 5;
-        long baseDelayMs = 10;
-
-        for(int attempt = 1; attempt <=maxAttempts; attempt++) {
-            Optional<Payment> existing = paymentRepository.findByIdempotencyKey(idempotencyKey);
-            if(existing.isPresent()){
-                return mapToResponse(existing.get());
-            }
-
-            // Exponential backoff with jitter
-            long backoff = (long) (baseDelayMs * Math.pow(2, attempt - 1));
-            long jitter = ThreadLocalRandom.current().nextLong(0, 10);
-            long sleepTime = backoff + jitter;
-
-            try {
-                Thread.sleep(sleepTime);
-            } catch(InterruptedException e){
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Retry interrupted", e);
-            }
-        }
-
-        throw new RuntimeException("Payment exists but not visible after retries");
     }
 
     private Payment buildPayment(CreatePaymentRequest request, String idempotencyKey) {

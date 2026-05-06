@@ -75,6 +75,15 @@ public class Payment {
     @Column(nullable = false)
     private int maxRetries = 5;
 
+    @Column
+    private Instant nextRetryAt;
+
+    @Column
+    private Instant lastAttemptAt;
+
+    @Column(length = 500)
+    private String lastError;
+
     @PrePersist
     public void onCreate(){
         createdAt = Instant.now();
